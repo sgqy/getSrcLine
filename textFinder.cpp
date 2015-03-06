@@ -4,8 +4,11 @@
 // crc32 by notwa@github
 
 
-#include <map>
-#include <vector>
+#include <cstring>
+
+#include <utility>
+#include <list>
+
 #include "textFinder.h"
 
 inline textFinder::ulong textFinder::crc_reflect(ulong input)
@@ -65,24 +68,66 @@ inline int textFinder::setfile(const char * fileName, void * flag)
 {
     return setfileh(crc32(fileName, strlen(fileName)), flag);
 }
-inline int textFinder::find(const char * leftTextIn, char * rightTextOut, void * flag)
+inline int textFinder::find(const char * leftTextIn, const char** rightTextOut, void * flag)
 {
     return findh(crc32(leftTextIn, strlen(leftTextIn)), rightTextOut, flag);
 }
 
 
-int textFinder::setfileh(const unsigned int fileNameHash, void * flag)
-{
-    return 0;
-}
-
-int textFinder::findh(const int leftHashIn, char * rightTextOut, void * flag)
-{
-    return 0;
-}
-
 int textFinder::create(const char * buff, void * flag)
 {
+    FDR_HEADER* phdr = (FDR_HEADER*)buff;
+
+    // check package type
+    if (phdr->packageInfo != FDR_PACK_INFO) throw FDR_INVALID_PACK;
+
+    // create crc32 table
+    crc_starting = phdr->CRCStarting;
+    crc_polynomial = phdr->CRCPolynomial;
+    crc_fill_table(crc_table, crc_polynomial);
+
+    // record text info
+    FDR_SFINFO* sfinfo = (FDR_SFINFO*)(phdr + 1);
+    const char* startPoint = (const char*)(sfinfo + phdr->fileCount);
+
+    sub_file subf;
+    for (int i = 0; i < phdr->fileCount; ++i)
+    {
+        line_pair pair;
+        line_list list;
+
+        const char* read = startPoint + sfinfo[i].beginOffset;
+        for (int j = 0; j < sfinfo[i].lineCount; ++j)
+        {
+            if (*read != FDR_LINE_ID) throw FDR_INVALID_PACK;
+            int* pleft = (int*)(read + 1);
+            pair.first = *pleft;
+            read += 5; // 跳过 hash 里出现的 0
+            pair.second = read;
+            read += strlen(read) + 1;
+
+            list.push_back(pair);
+        }
+        
+        subf.first = sfinfo[i].nameHash;
+        subf.second = list;
+        _pack.push_back(subf);
+    }
+
+    return 0;
+}
+
+
+
+int textFinder::setfileh(const unsigned int fileNameHash, void * flag)
+{
+
+    return 0;
+}
+
+int textFinder::findh(const int leftHashIn, const char** rightTextOut, void * flag)
+{
+
     return 0;
 }
 
