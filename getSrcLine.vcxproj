@@ -14,7 +14,7 @@
     <ClInclude Include="textFinder.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="CRC32.cpp" />
+    <ClCompile Include="textFinder.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{235C1654-78C0-47E0-A8EC-CE8798DCF3F3}</ProjectGuid>

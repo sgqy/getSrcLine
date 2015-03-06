@@ -20,7 +20,7 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="CRC32.cpp">
+    <ClCompile Include="textFinder.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

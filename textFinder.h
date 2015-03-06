@@ -1,9 +1,12 @@
 
 
 // author: wiki908
+// crc32 by notwa@github
+
 
 #pragma once
 
+#include <cstring>
 #include <map>
 #include <vector>
 
@@ -11,6 +14,8 @@
 struct HEADER
 {
     char packageInfo[8];
+    unsigned int CRCStarting;
+    unsigned int CRCPolynomial;
     int headerLength;
     int fileCount;
 };
@@ -31,28 +36,26 @@ struct FILEINFO
 
 class textFinder
 {
-    char _history[8][6];
+    int _history[6];
 
-    // CRC32 Begin
-    unsigned int POLYNOMIAL = 0xEDB88320;
-    unsigned int crc_table[256];
-    void make_table()
-    {
-        int i, j, crc;
-        for (i = 0; i < 256; i++)
-            for (j = 0, crc_table[i] = i; j < 8; j++)
-                crc_table[i] = (crc_table[i] >> 1) ^ ((crc_table[i] & 1) ? POLYNOMIAL : 0);
-    }
-    unsigned int crc32(char *buff, int len, unsigned int crc = 0)
-    {
-        crc = ~crc;
-        for (int i = 0; i < len; i++)
-            crc = (crc >> 8) ^ crc_table[(crc ^ buff[i]) & 0xff];
-        return ~crc;
-    }
+    // CRC32 Start
+    typedef unsigned long ulong;
+    enum { CRC_TABLE_SIZE = 0x100 };
+
+    ulong crc_reflect(ulong input);
+    void crc_fill_table(ulong *table, ulong polynomial, int big = 0);
+    void crc_le_cycle(ulong *table, ulong *remainder, char c);
+
+    ulong crc32(const char* str, const int len);
+
+    ulong crc_table[CRC_TABLE_SIZE];
+    ulong crc_starting;
+    ulong crc_polynomial;
+
     // CRC32 End
 
 public:
+
     int create(const char* buff, void* flag = 0);
 
     int setfile(const char* fileName, void* flag = 0);
@@ -64,4 +67,3 @@ public:
     int find(const char* leftTextIn, char* rightTextOut = 0, void* flag = 0);
     int findh(const int leftHashIn, char* rightTextOut = 0, void* flag = 0);
 };
-
