@@ -66,11 +66,15 @@ inline textFinder::ulong textFinder::crc32(const char * str, const int len)
 // leftTextIn 应为字符串, leftHashIn 应为文本的 CRC32
 inline int textFinder::setfile(const char * fileName, void * flag)
 {
-    return setfileh(crc32(fileName, strlen(fileName)), flag);
+    ulong fnHash = 0;
+    if (fileName != 0) fnHash = crc32(fileName, strlen(fileName));
+    return setfileh(fnHash, flag);
 }
 inline int textFinder::find(const char * leftTextIn, const char** rightTextOut, void * flag)
 {
-    return findh(crc32(leftTextIn, strlen(leftTextIn)), rightTextOut, flag);
+    ulong currHash = 0;
+    if(leftTextIn != 0) currHash = crc32(leftTextIn, strlen(leftTextIn));
+    return findh(currHash, rightTextOut, flag);
 }
 
 
@@ -79,7 +83,7 @@ int textFinder::create(const char * buff, void * flag)
     FDR_HEADER* phdr = (FDR_HEADER*)buff;
 
     // check package type
-    if (phdr->packageInfo != FDR_PACK_INFO) throw FDR_INVALID_PACK;
+    if (phdr->packageInfo != FDR_PACK_INFO) throw FDR_E_PACK_TYPE;
 
     // create crc32 table
     crc_starting = phdr->CRCStarting;
@@ -99,8 +103,8 @@ int textFinder::create(const char * buff, void * flag)
         const char* read = startPoint + sfinfo[i].beginOffset;
         for (int j = 0; j < sfinfo[i].lineCount; ++j)
         {
-            if (*read != FDR_LINE_ID) throw FDR_INVALID_PACK;
-            int* pleft = (int*)(read + 1);
+            if (*read != FDR_LINE_ID) throw FDR_E_PACK_TYPE;
+            ltexth_t* pleft = (ltexth_t*)(read + 1);
             pair.first = *pleft;
             read += 5; // 跳过 hash 里出现的 0
             pair.second = read;
@@ -114,20 +118,37 @@ int textFinder::create(const char * buff, void * flag)
         _pack.push_back(subf);
     }
 
-    return 0;
+    // _curfile = _pack.begin(); // 初始化文件检索列表
+    return FDR_SUCC;
 }
 
 
 
 int textFinder::setfileh(const unsigned int fileNameHash, void * flag)
 {
-
-    return 0;
+    for (auto s : _pack)
+    {
+        if (s == fileNameHash)
+        {
+            _curfile = s;
+            return FDR_SUCC;
+        }
+    }
+    return FDR_W_NXF;
 }
+
+
 
 int textFinder::findh(const int leftHashIn, const char** rightTextOut, void * flag)
 {
+    if (rightTextOut == 0) throw FDR_E_ARG_TYPE;
 
-    return 0;
+    auto s = _curfile.second;
+
+    
+
+
+
+    return FDR_W_NXL;
 }
 
