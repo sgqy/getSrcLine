@@ -1,5 +1,5 @@
 
-int main()
+long main()
 {
     return 0;
 }
