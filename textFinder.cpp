@@ -73,7 +73,7 @@ inline long textFinder::setfile(const char * fileName, void * flag)
 inline long textFinder::find(const char * leftTextIn, const char** rightTextOut, void * flag)
 {
     ulong currHash = 0;
-    if(leftTextIn != 0) currHash = crc32(leftTextIn, strlen(leftTextIn));
+    if (leftTextIn != 0) currHash = crc32(leftTextIn, strlen(leftTextIn));
     return findh(currHash, rightTextOut, flag);
 }
 
@@ -112,7 +112,7 @@ long textFinder::create(const char * buff, void * flag)
 
             list.push_back(pair);
         }
-        
+
         subf.first = sfinfo[i].nameHash;
         subf.second = list;
         _pack.push_back(subf);
@@ -126,6 +126,7 @@ long textFinder::create(const char * buff, void * flag)
 
 long textFinder::setfileh(const unsigned long fileNameHash, void * flag)
 {
+    if (fileNameHash == _curfhash) return FDR_SUCC;
     for (auto s : _pack)
     {
         if (s == fileNameHash)
@@ -145,8 +146,36 @@ long textFinder::findh(const long leftHashIn, const char** rightTextOut, void * 
 
     auto s = _curfile.second;
 
-    
-
+    if (_pre[0].first == leftHashIn)
+    {
+        *rightTextOut = _pre[0].second;
+        return FDR_SUCC;
+    }
+    else if (_pre[1].first == leftHashIn)
+    {
+        *rightTextOut = _pre[1].second;
+        _pre[0] = _pre[1];
+        ++_curline_it;
+        if(_curline_it != s.end())
+            _pre[1] = *_curline_it;
+        return FDR_SUCC;
+    }
+    else
+    {
+        for (auto t = s.begin(); t != s.end(); ++t)
+        {
+            if (*t == leftHashIn)
+            {
+                _curline_it = t;
+                *rightTextOut = t->second;
+                _pre[0] = *t++;
+                if (t != s.end())
+                    _pre[1] = *t;
+                return FDR_SUCC;
+            }
+        }
+        return FDR_W_NXL;
+    }
 
 
     return FDR_W_NXL;

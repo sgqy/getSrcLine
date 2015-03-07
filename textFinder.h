@@ -61,28 +61,11 @@ class textFinder
 
     fdr_pack _pack;
     sub_file _curfile;
+    unsigned long _curfhash;
 
-    class preread_t
-    {
-    public:
-        enum { history_size = 6 };
-    private:
-        line_pair _rec[history_size];
-        long _idx;
-    public:
-        void push(const line_pair& p)
-        {
-            _rec[_idx++ % history_size] = p;
-        }
-        line_pair& operator[](const long& idx)
-        {
-            return _rec[idx % history_size];
-        }
-        const line_pair* inner()
-        {
-            return _rec;
-        }
-    } _preread;
+    line_pair _pre[2];
+    line_list::iterator _curline_it;
+
     // CRC32 Start
     typedef unsigned long ulong;
     enum { CRC_TABLE_SIZE = 0x100 };
