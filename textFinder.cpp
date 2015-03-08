@@ -4,7 +4,7 @@
 // crc32 by notwa@github
 
 
-#include <cstring>
+#include <string.h>
 
 #include <utility>
 #include <list>
@@ -50,7 +50,8 @@ inline void textFinder::crc_le_cycle(ulong * table, ulong * remainder, char c)
     *remainder = ((*remainder) >> 8) ^ byte;
 }
 
-inline textFinder::ulong textFinder::crc32(const char * str, const long len)
+//inline 
+textFinder::ulong textFinder::crc32(const char * str, const long len)
 {
     ulong remainder = crc_starting;
     // Table will be created in func `public:create'
@@ -64,16 +65,18 @@ inline textFinder::ulong textFinder::crc32(const char * str, const long len)
 // rightTextOut == 0 时, 返回 rightOut 的长度
 // rightTextOut != 0 时, 返回 0 成功, 返回负数失败
 // leftTextIn 应为字符串, leftHashIn 应为文本的 CRC32
-inline long textFinder::setfile(const char * fileName, void * flag)
+long textFinder::setfile(const char * fileName, void * flag)
 {
     ulong fnHash = 0;
     if (fileName != 0) fnHash = crc32(fileName, strlen(fileName));
+    //printf("f: %3d %08X %s\n", strlen(fileName), fnHash, fileName);
     return setfileh(fnHash, flag);
 }
-inline long textFinder::find(const char * leftTextIn, const char** rightTextOut, void * flag)
+long textFinder::find(const char * leftTextIn, const char** rightTextOut, void * flag)
 {
     ulong currHash = 0;
     if (leftTextIn != 0) currHash = crc32(leftTextIn, strlen(leftTextIn));
+    //printf("l: %3d %08X\n", strlen(leftTextIn), currHash);
     return findh(currHash, rightTextOut, flag);
 }
 
@@ -83,6 +86,7 @@ long textFinder::create(const char * buff, void * flag)
     FDR_HEADER* phdr = (FDR_HEADER*)buff;
 
     // check package type
+    // printf("phdr: %08X\n", phdr->packageInfo);
     if (phdr->packageInfo != FDR_PACK_INFO) throw FDR_E_PACK_TYPE;
 
     // create crc32 table
@@ -106,6 +110,9 @@ long textFinder::create(const char * buff, void * flag)
             if (*read != FDR_LINE_ID) throw FDR_E_PACK_TYPE;
             ltexth_t* pleft = (ltexth_t*)(read + 1);
             pair.first = *pleft;
+
+            //printf("%08X\n", *pleft);
+
             read += 5; // 跳过 hash 里出现的 0
             pair.second = read;
             read += strlen(read) + 1;
@@ -138,7 +145,7 @@ long textFinder::setfileh(const unsigned long fileNameHash, void * flag)
     return FDR_W_NXF;
 }
 
-
+const char* szFDR_W_NXL = "Non-existing Line.";
 
 long textFinder::findh(const long leftHashIn, const char** rightTextOut, void * flag)
 {
@@ -146,38 +153,40 @@ long textFinder::findh(const long leftHashIn, const char** rightTextOut, void * 
 
     auto s = _curfile.second;
 
-    if (_pre[0].first == leftHashIn)
+
+    //if (_pre[0].first == leftHashIn)
+    //{
+    //    *rightTextOut = _pre[0].second;
+    //    return FDR_SUCC;
+    //}
+    //else if (_pre[1].first == leftHashIn) // 在 _pre[0] 处拦截
+    //{
+    //    _pre[0] = _pre[1];
+    //    *rightTextOut = _pre[0].second;
+
+    //    ++_next_it;
+    //    if(_next_it != s.end())
+    //        _pre[1] = *_next_it;
+    //    return FDR_SUCC;
+    //}
+    //else
+    //{
+    for (auto _next_it = s.begin(); _next_it != s.end(); ++_next_it)
     {
-        *rightTextOut = _pre[0].second;
-        return FDR_SUCC;
-    }
-    else if (_pre[1].first == leftHashIn)
-    {
-        *rightTextOut = _pre[1].second;
-        _pre[0] = _pre[1];
-        ++_curline_it;
-        if(_curline_it != s.end())
-            _pre[1] = *_curline_it;
-        return FDR_SUCC;
-    }
-    else
-    {
-        for (auto t = s.begin(); t != s.end(); ++t)
+        if (*_next_it == leftHashIn)
         {
-            if (*t == leftHashIn)
-            {
-                _curline_it = t;
-                *rightTextOut = t->second;
-                _pre[0] = *t++;
-                if (t != s.end())
-                    _pre[1] = *t;
-                return FDR_SUCC;
-            }
+            *rightTextOut = _next_it->second;
+            //_pre[0] = *_next_it++;
+            //if (_next_it != s.end())
+            //    _pre[1] = *_next_it;
+            return FDR_SUCC;
         }
-        return FDR_W_NXL;
     }
-
-
+    *rightTextOut = szFDR_W_NXL;
     return FDR_W_NXL;
+
+    //}
+    //return FDR_W_NXL;
+
 }
 

@@ -9,7 +9,7 @@
 #include <utility>
 #include <list>
 
-#define FDR_PACK_INFO     3077401        // 定义当前坑的唯一标识
+#define FDR_PACK_INFO     (0x00432B43)   // 定义当前坑的唯一标识
 #define FDR_E_PACK_TYPE   (0x50)         // 文件是其他格式或其他坑的
 #define FDR_E_ARG_TYPE    (0x51)         // 参数错误
 
@@ -21,6 +21,8 @@
 
 #define FDR_CRC_STARTING   (0xFFFFFFFF)  //
 #define FDR_CRC_POLYNOMIAL (0x04C11DB7)  // CRC 的默认系数
+
+extern const char* szFDR_W_NXL;
 
 #pragma pack(1)
 
@@ -63,8 +65,8 @@ class textFinder
     sub_file _curfile;
     unsigned long _curfhash;
 
-    line_pair _pre[2];
-    line_list::iterator _curline_it;
+    //line_pair _pre[2];
+    //line_list::iterator _next_it;
 
     // CRC32 Start
     typedef unsigned long ulong;
@@ -73,9 +75,9 @@ class textFinder
     ulong crc_reflect(ulong input);
     void crc_fill_table(ulong *table, ulong polynomial, long big = 0);
     void crc_le_cycle(ulong *table, ulong *remainder, char c);
-
+public:
     ulong crc32(const char* str, const long len);
-
+private:
     ulong crc_table[CRC_TABLE_SIZE];
     ulong crc_starting;
     ulong crc_polynomial;
