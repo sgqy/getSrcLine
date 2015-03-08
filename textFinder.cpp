@@ -182,6 +182,22 @@ long textFinder::findh(const long leftHashIn, const char** rightTextOut, void * 
             return FDR_SUCC;
         }
     }
+
+    // setfile() 失败的解决方案
+    for (auto f : _pack)
+    {
+        auto lst = f.second;
+        for (auto L : lst)
+        {
+            if (L == leftHashIn)
+            {
+                *rightTextOut = L.second;
+                return FDR_SUCC;
+            }
+        }
+    }
+
+    // 这里真没有╮(╯▽╰)╭
     *rightTextOut = szFDR_W_NXL;
     return FDR_W_NXL;
 
