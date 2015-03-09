@@ -1,4 +1,7 @@
 
+
+#if 1
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <io.h>
@@ -94,3 +97,20 @@ int wmain(int argc, wchar_t** argv)
     return 0;
 }
 
+#endif
+
+
+#if 0
+
+#include <stdio.h>
+#include "crc32.h"
+
+int main()
+{
+    CRC32 crc;
+    crc.Init(0);
+    printf("%08X\n", crc.Calc("CCA0001", 7));
+    return 0;
+}
+
+#endif
