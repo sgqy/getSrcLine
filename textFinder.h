@@ -11,6 +11,7 @@
 #include "crc32.h"
 
 #define FDR_PACK_INFO     (0x00432B43)   // 定义当前坑的唯一标识
+
 #define FDR_E_PACK_TYPE   (0x50)         // 文件是其他格式或其他坑的
 #define FDR_E_ARG_TYPE    (0x51)         // 参数错误
 

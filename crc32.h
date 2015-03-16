@@ -5,6 +5,10 @@
 
 #pragma once
 
+#define CRC_STARTING   (0xFFFFFFFF)  //
+#define CRC_POLYNOMIAL (0x04C11DB7)  // CRC 的默认系数
+
+
 class CRC32
 {
     typedef unsigned long ulong;
@@ -28,7 +32,7 @@ class CRC32
 public:
     CRC32();
     void Init(const char xorOutput = 1, const char bigEndian = 0, const char reflectOutput = 0, 
-        const ulong Starting = 0xFFFFFFFF, const ulong Polynomical = 0x04C11DB7);
+        const ulong Starting = CRC_STARTING, const ulong Polynomical = CRC_POLYNOMIAL);
     ulong Calc(const char* buff, const long length);
 };
 
